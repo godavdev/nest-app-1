@@ -1,43 +1,57 @@
 import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UserDto } from './dto/user.dtos';
+import { PrismaService } from 'src/shared/prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
-  users: User[] = [];
+  constructor(private readonly prismaService: PrismaService) {}
 
-  getUsers(): User[] {
-    return this.users;
+  async getUsers(): Promise<User[]> {
+    const users = await this.prismaService.user.findMany();
+    return users;
   }
 
-  getUserById(id: number): User | undefined {
-    return this.users.find((user) => user.id === id);
+  async getUserById(id: number): Promise<User | undefined> {
+    const foundUser = await this.prismaService.user.findUnique({
+      where: {
+        id,
+      },
+    });
+    return foundUser ?? undefined;
   }
 
-  createUser(dto: UserDto): User {
-    const newUser: User = {
-      id: this.users.length + 1,
-      ...dto,
-    };
-    this.users.push(newUser);
-    return newUser;
+  async createUser(dto: UserDto): Promise<User> {
+    const createUser = await this.prismaService.user.create({
+      data: dto,
+    });
+
+    return createUser;
   }
 
-  updateUser(id: number, dto: UserDto): User | undefined {
-    const userIndex = this.users.findIndex((user) => user.id === id);
-    if (userIndex === -1) {
+  async updateUser(id: number, dto: UserDto): Promise<User | undefined> {
+    try {
+      const updatedUser = await this.prismaService.user.update({
+        where: {
+          id,
+        },
+        data: dto,
+      });
+      return updatedUser;
+    } catch (error) {
+      console.log('Error updating user:', error);
       return undefined;
     }
-    this.users[userIndex] = { id, ...dto };
-    return this.users[userIndex];
   }
 
-  deleteUser(id: number): boolean {
-    const userIndex = this.users.findIndex((user) => user.id === id);
-    if (userIndex === -1) {
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      const deletedUser = await this.prismaService.user.delete({
+        where: { id },
+      });
+      return !!deletedUser;
+    } catch {
       return false;
     }
-    this.users.splice(userIndex, 1);
-    return true;
   }
 }

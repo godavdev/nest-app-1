@@ -19,14 +19,14 @@ export class UsersController {
 
   // http://localhost:3000/users GET
   @Get()
-  getUsers() {
-    return this.usersService.getUsers();
+  async getUsers() {
+    return await this.usersService.getUsers();
   }
 
   //   http://localhost:3000/users/1 GET
   @Get(':id')
-  getUserById(@Param() params: { id: string }) {
-    const foundUser = this.usersService.getUserById(Number(params.id));
+  async getUserById(@Param() params: { id: string }) {
+    const foundUser = await this.usersService.getUserById(Number(params.id));
     if (!foundUser) {
       throw new NotFoundException();
     }
@@ -35,13 +35,16 @@ export class UsersController {
 
   //   http://localhost:3000/users POST
   @Post()
-  createUser(@Body() body: UserDto) {
-    return this.usersService.createUser(body);
+  async createUser(@Body() body: UserDto) {
+    return await this.usersService.createUser(body);
   }
 
   @Put(':id')
-  replaceUser(@Param() params: { id: string }, @Body() body: UserDto) {
-    const updatedUser = this.usersService.updateUser(Number(params.id), body);
+  async replaceUser(@Param() params: { id: string }, @Body() body: UserDto) {
+    const updatedUser = await this.usersService.updateUser(
+      Number(params.id),
+      body,
+    );
     if (!updatedUser) {
       throw new NotFoundException();
     }
@@ -49,8 +52,8 @@ export class UsersController {
   }
 
   @Delete(':id')
-  deleteUser(@Param() params: { id: string }) {
-    const deleted = this.usersService.deleteUser(Number(params.id));
+  async deleteUser(@Param() params: { id: string }) {
+    const deleted = await this.usersService.deleteUser(Number(params.id));
     if (!deleted) {
       throw new NotFoundException();
     }
